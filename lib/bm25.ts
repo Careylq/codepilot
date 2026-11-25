@@ -11,6 +11,12 @@
 export function tokenize(text: string): string[] {
   const tokens: string[] = [];
 
+  // 中文按 2-gram 切分（"检索" -> 检索；"怎么做" -> 怎么/么做）
+  for (const run of text.match(/[\u4e00-\u9fa5]+/g) ?? []) {
+    for (let i = 0; i < run.length - 1; i++) tokens.push(run.slice(i, i + 2));
+    if (run.length === 1) tokens.push(run);
+  }
+
   for (const raw of text.split(/[^a-zA-Z0-9_]+/)) {
     if (!raw) continue;
 

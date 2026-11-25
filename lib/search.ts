@@ -1,18 +1,21 @@
 import { prisma } from "./db";
 import { indexRepo, type Chunk } from "./indexer";
 import { BM25, tokenize } from "./bm25";
+import { ensureEmbeddings, vectorSearch } from "./vector";
 
-let chunks: Chunk[] | null = null;
+type DbChunk = Chunk & { id: number };
+
+let chunks: DbChunk[] | null = null;
 let bm25: BM25 | null = null;
 
-async function loadFromDb(): Promise<Chunk[]> {
+async function loadFromDb(): Promise<DbChunk[]> {
   return prisma.chunk.findMany({
     orderBy: { id: "asc" },
-    select: { path: true, startLine: true, endLine: true, content: true },
+    select: { id: true, path: true, startLine: true, endLine: true, content: true },
   });
 }
 
-async function indexToDb(): Promise<Chunk[]> {
+async function indexToDb(): Promise<DbChunk[]> {
   const indexed = await indexRepo();
   await prisma.chunk.deleteMany();
   for (const c of indexed) {
@@ -51,6 +54,8 @@ export type SearchHit = {
   startLine: number;
   endLine: number;
   score: number;
+  bm25?: number;
+  vec?: number;
   snippet: string;
 };
 
@@ -83,7 +88,8 @@ function pathBonus(chunk: Chunk, rawQuery: string): number {
   return base.includes(q) ? 2 : 0;
 }
 
-export async function searchCode(query: string, topK = 5): Promise<SearchHit[]> {
+/** 纯 BM25 检索（保留，用来做对照） */
+export async function bm25Search(query: string, topK = 5): Promise<SearchHit[]> {
   await ensureIndex();
 
   const scored = bm25!.score(tokenize(query)).map((h) => ({
@@ -106,4 +112,75 @@ export async function searchCode(query: string, topK = 5): Promise<SearchHit[]> 
       snippet: c.content.slice(0, 300),
     };
   });
+}
+
+/** search_code 工具默认走混合检索 */
+export const searchCode = hybridSearch;
+
+/**
+ * 源码优先：查实现时，lib/ 下的代码比 README / test route 更该被回答。
+ * 这是启发式，不是真理；真实系统会用 query intent 分类。
+ */
+function isIdentifierQuery(q: string): boolean {
+  const t = q.trim();
+  return /^[A-Za-z_$][\w$.-]*$/.test(t) && !/\s/.test(t);
+}
+
+/**
+ * 混合检索：BM25 + 向量，用 RRF 融合。
+ * RRF(文档) = Σ 1 / (k + 排名)，k 常取 60。
+ */
+export async function hybridSearch(query: string, topK = 5) {
+  await ensureIndex();
+  await ensureEmbeddings();
+
+  // 1. BM25 排名
+  const bm25Ranked = bm25!
+    .score(tokenize(query))
+    .map((h) => ({
+      dbId: chunks![h.id].id,
+      score: h.score + definitionBonus(chunks![h.id], query),
+    }))
+    .sort((a, b) => b.score - a.score);
+
+  // 2. 向量排名
+  const vecRanked = await vectorSearch(query, 50);
+
+  // 3. RRF 融合
+  const K = 60;
+  const fused = new Map<number, { rrf: number; bm25?: number; vec?: number }>();
+
+  const bm25W = isIdentifierQuery(query) ? 2 : 1;
+  const vecW = isIdentifierQuery(query) ? 1 : 3;
+
+  bm25Ranked.forEach((h, i) => {
+    const cur = fused.get(h.dbId) ?? { rrf: 0 };
+    cur.rrf += bm25W / (K + i + 1);
+    cur.bm25 = h.score;
+    fused.set(h.dbId, cur);
+  });
+
+  vecRanked.forEach((h, i) => {
+    const cur = fused.get(h.id) ?? { rrf: 0 };
+    cur.rrf += vecW / (K + i + 1);
+    cur.vec = h.score;
+    fused.set(h.id, cur);
+  });
+
+  const items = [...fused.entries()].map(([id, s]) => {
+    const c = chunks!.find((x) => x.id === id)!;
+    return { c, s, final: s.rrf };
+  });
+
+  items.sort((a, b) => b.final - a.final);
+
+  return items.slice(0, topK).map(({ c, s, final }) => ({
+    path: c.path,
+    startLine: c.startLine,
+    endLine: c.endLine,
+    score: Number(final.toFixed(4)),
+    bm25: s.bm25 !== undefined ? Number(s.bm25.toFixed(3)) : undefined,
+    vec: s.vec !== undefined ? Number(s.vec.toFixed(3)) : undefined,
+    snippet: c.content.slice(0, 300),
+  }));
 }

@@ -12,13 +12,14 @@ const IGNORE_DIRS = new Set([
   "coverage",
 ]);
 
+const IGNORE_PATH_PARTS = ["/api/test-", "/__tests__/", ".test.", ".spec."];
+
 const EXTENSIONS = new Set([
   ".ts",
   ".tsx",
   ".js",
   ".jsx",
   ".json",
-  ".md",
   ".css",
 ]);
 
@@ -51,6 +52,7 @@ export async function indexRepo(root = process.cwd()): Promise<Chunk[]> {
       }
 
       if (!EXTENSIONS.has(path.extname(entry.name))) continue;
+      if (IGNORE_PATH_PARTS.some((part) => full.includes(part))) continue;
 
       const text = await readFile(full, "utf8");
       const lines = text.split("\n");
