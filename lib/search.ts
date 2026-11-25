@@ -1,16 +1,49 @@
+import { prisma } from "./db";
 import { indexRepo, type Chunk } from "./indexer";
 import { BM25, tokenize } from "./bm25";
 
 let chunks: Chunk[] | null = null;
 let bm25: BM25 | null = null;
 
+async function loadFromDb(): Promise<Chunk[]> {
+  return prisma.chunk.findMany({
+    orderBy: { id: "asc" },
+    select: { path: true, startLine: true, endLine: true, content: true },
+  });
+}
+
+async function indexToDb(): Promise<Chunk[]> {
+  const indexed = await indexRepo();
+  await prisma.chunk.deleteMany();
+  for (const c of indexed) {
+    await prisma.chunk.create({ data: c });
+  }
+  return loadFromDb();
+}
+
 export async function ensureIndex() {
-  if (chunks && bm25) return { count: chunks.length };
-  chunks = await indexRepo();
+  if (chunks && bm25) return { count: chunks.length, source: "memory" };
+
+  let rows = await loadFromDb();
+
+  if (rows.length === 0) {
+    rows = await indexToDb();
+  }
+
+  chunks = rows;
   bm25 = new BM25();
   for (const c of chunks) bm25.add(tokenize(`${c.path} ${c.content}`));
   bm25.finalize();
-  return { count: chunks.length };
+
+  return { count: chunks.length, source: "db" };
+}
+
+/** 重建索引（改了切分策略时用） */
+export async function rebuildIndex() {
+  chunks = null;
+  bm25 = null;
+  await indexToDb();
+  return ensureIndex();
 }
 
 export type SearchHit = {
@@ -55,7 +88,10 @@ export async function searchCode(query: string, topK = 5): Promise<SearchHit[]> 
 
   const scored = bm25!.score(tokenize(query)).map((h) => ({
     id: h.id,
-    score: h.score + definitionBonus(chunks![h.id], query) + pathBonus(chunks![h.id], query),
+    score:
+      h.score +
+      definitionBonus(chunks![h.id], query) +
+      pathBonus(chunks![h.id], query),
   }));
 
   scored.sort((a, b) => b.score - a.score);
