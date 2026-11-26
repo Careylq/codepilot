@@ -46,8 +46,19 @@ export type VectorHit = {
   score: number;
 };
 
+const queryCache = new Map<string, number[]>();
+
+async function embedQuery(query: string): Promise<number[]> {
+  const cached = queryCache.get(query);
+  if (cached) return cached;
+  const [vec] = await embed([query]);
+  if (queryCache.size > 200) queryCache.clear();
+  queryCache.set(query, vec);
+  return vec;
+}
+
 export async function vectorSearch(query: string, topK = 5): Promise<VectorHit[]> {
-  const [q] = await embed([query]);
+  const q = await embedQuery(query);
 
   const rows = await prisma.chunk.findMany({
     where: { embedding: { not: null } },

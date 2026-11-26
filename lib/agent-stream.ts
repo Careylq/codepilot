@@ -11,7 +11,7 @@ export type StreamCallbacks = {
 };
 
 const MAX_STEPS = 8;
-const TOOL_TIMEOUT_MS = 8000;
+const TOOL_TIMEOUT_MS = 15000;
 const TOOL_RESULT_MAX = 6000;
 const MAX_CONTEXT_TOKENS = 12000;
 

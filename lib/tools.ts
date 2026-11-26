@@ -1,6 +1,5 @@
-import { readFile } from "node:fs/promises";
 import { searchCode } from "./search";
-import { isSafeRepoPath } from "./fs-guard";
+import { getFileContent } from "./file-content";
 
 export type ToolResult =
   | { ok: true; content: string }
@@ -34,24 +33,19 @@ export const readFileTool: Tool = {
     const rel = String(args.path ?? "").trim();
     if (!rel) return { ok: false, error: "缺少 path 参数" };
 
-    const guard = isSafeRepoPath(rel);
-    if (!guard.ok) return { ok: false, error: guard.error };
-    const abs = guard.abs;
+    const file = await getFileContent(rel);
+    if (!file.ok) return { ok: false, error: file.error };
 
-    try {
-      const content = await readFile(abs, "utf8");
+    const content = file.content;
 
-      let out = content;
-      if (content.length > MAX_CHARS) {
-        out =
-          content.slice(0, MAX_CHARS) +
-          `\n\n（内容已截断，原文件共 ${content.length} 字符）`;
-      }
-
-      return { ok: true, content: out };
-    } catch (err) {
-      return { ok: false, error: `读取失败：${String(err)}` };
+    let out = content;
+    if (content.length > MAX_CHARS) {
+      out =
+        content.slice(0, MAX_CHARS) +
+        `\n\n（内容已截断，原文件共 ${content.length} 字符）`;
     }
+
+    return { ok: true, content: out };
   },
 };
 

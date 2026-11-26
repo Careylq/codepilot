@@ -114,8 +114,16 @@ export async function bm25Search(query: string, topK = 5): Promise<SearchHit[]> 
   });
 }
 
-/** search_code 工具默认走混合检索 */
-export const searchCode = hybridSearch;
+/**
+ * search_code 路由：
+ * - 符号查询（readFileTool）→ 纯 BM25，快且准，不调 embedding
+ * - 自然语言 → 混合检索
+ * 依据：50 条评测里符号题 BM25 hit@5 0.967，且 embedding 网络抖动会拖垮 8s 超时
+ */
+export async function searchCode(query: string, topK = 5): Promise<SearchHit[]> {
+  if (isIdentifierQuery(query)) return bm25Search(query, topK);
+  return hybridSearch(query, topK);
+}
 
 /**
  * 源码优先：查实现时，lib/ 下的代码比 README / test route 更该被回答。

@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
-import { readFile } from "node:fs/promises";
-import { isSafeRepoPath } from "@/lib/fs-guard";
+import { getFileContent } from "@/lib/file-content";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 export async function GET(req: NextRequest) {
@@ -17,26 +16,20 @@ export async function GET(req: NextRequest) {
 
   if (!p) return Response.json({ error: "缺少 path" }, { status: 400 });
 
-  const guard = isSafeRepoPath(p);
-  if (!guard.ok) {
-    return Response.json({ error: guard.error }, { status: 400 });
+  const file = await getFileContent(p);
+  if (!file.ok) {
+    return Response.json({ error: file.error }, { status: 404 });
   }
-  const abs = guard.abs;
 
-  try {
-    const text = await readFile(abs, "utf8");
-    const all = text.split("\n");
-    const start = Math.max(1, line - 8);
-    const end = Math.min(all.length, line + 14);
+  const all = file.content.split("\n");
+  const start = Math.max(1, line - 8);
+  const end = Math.min(all.length, line + 14);
 
-    return Response.json({
-      path: p,
-      line,
-      start,
-      end,
-      lines: all.slice(start - 1, end).map((t, i) => ({ n: start + i, t })),
-    });
-  } catch (err) {
-    return Response.json({ error: `读取失败：${String(err)}` }, { status: 404 });
-  }
+  return Response.json({
+    path: p,
+    line,
+    start,
+    end,
+    lines: all.slice(start - 1, end).map((t, i) => ({ n: start + i, t })),
+  });
 }
