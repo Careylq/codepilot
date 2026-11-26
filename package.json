@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "index": "tsx scripts/index-repo.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
@@ -21,6 +22,7 @@
     "@types/react-dom": "^19.0.0",
     "dotenv": "^18.0.10",
     "prisma": "6.19.3",
+    "tsx": "^4.23.15",
     "typescript": "^5.7.0"
   }
 }
