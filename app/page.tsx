@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -253,7 +254,10 @@ export default function Home() {
   return (
     <main>
       <h1>CodePilot</h1>
-      <div className="sub">代码仓库问答 Agent · 多仓库 + 流式 + 引用可点</div>
+      <div className="sub">
+        代码仓库问答 Agent · 多仓库 + 流式 + 引用可点 ·{" "}
+        <Link href="/review">Review 模式 →</Link>
+      </div>
 
       <select
         className="repo-select"
