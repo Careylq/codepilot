@@ -1,8 +1,17 @@
 import { NextRequest } from "next/server";
 import { readFile } from "node:fs/promises";
 import { isSafeRepoPath } from "@/lib/fs-guard";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 export async function GET(req: NextRequest) {
+  const rl = rateLimit(`file:${clientIp(req)}`, 120, 60_000);
+  if (!rl.ok) {
+    return Response.json(
+      { error: `请求过于频繁，请 ${rl.retryAfter}s 后再试` },
+      { status: 429 },
+    );
+  }
+
   const p = req.nextUrl.searchParams.get("path") ?? "";
   const line = Math.max(1, Number(req.nextUrl.searchParams.get("line") ?? "1"));
 
