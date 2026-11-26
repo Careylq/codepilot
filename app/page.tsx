@@ -168,6 +168,7 @@ export default function Home() {
         body: JSON.stringify({
           messages: [...history, { role: "user", content: text }],
           sessionId: sessionKey(),
+          repo,
         }),
         signal: ac.signal,
       });
