@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { bm25Search, hybridSearch } from "@/lib/search";
 import { vectorSearch } from "@/lib/vector";
+import { embed } from "@/lib/embedding";
 import questions from "@/eval/questions.json";
 import { devOnly } from "@/lib/dev-only";
 
@@ -39,11 +40,21 @@ export async function GET(req: NextRequest) {
 
   const rows = [];
 
-  for (const q of qs) {
+  // 批量算 query 向量：50 题一次调用，避免 100 次串行 embedding
+  const vectors: number[][] = [];
+  for (let i = 0; i < qs.length; i += 16) {
+    const batch = qs.slice(i, i + 16).map((q) => q.question);
+    vectors.push(...(await embed(batch)));
+  }
+
+  for (let idx = 0; idx < qs.length; idx++) {
+    const q = qs[idx];
+    const qv = vectors[idx];
+
     const [b, v, h] = await Promise.all([
       bm25Search(q.question, 5),
-      vectorSearch(q.question, 5),
-      hybridSearch(q.question, 5),
+      vectorSearch(q.question, 5, "codepilot", qv),
+      hybridSearch(q.question, 5, "codepilot", qv),
     ]);
 
     rows.push({

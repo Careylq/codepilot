@@ -61,6 +61,8 @@ async function main() {
             startLine: batch[j].startLine,
             endLine: batch[j].endLine,
             content: batch[j].content,
+            symbol: batch[j].symbol,
+            kind: batch[j].kind,
             embedding: JSON.stringify(vectors[j]),
           },
         });

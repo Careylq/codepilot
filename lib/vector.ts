@@ -48,21 +48,24 @@ export type VectorHit = {
 
 const queryCache = new Map<string, number[]>();
 
-async function embedQuery(query: string): Promise<number[]> {
-  const cached = queryCache.get(query);
-  if (cached) return cached;
-  const [vec] = await embed([query]);
-  if (queryCache.size > 200) queryCache.clear();
-  queryCache.set(query, vec);
-  return vec;
+type VectorRow = {
+  id: number;
+  path: string;
+  startLine: number;
+  endLine: number;
+  content: string;
+  vector: number[];
+};
+
+const vectorCache = new Map<string, VectorRow[]>();
+
+export function clearVectorCache() {
+  vectorCache.clear();
 }
 
-export async function vectorSearch(
-  query: string,
-  topK = 5,
-  repo = "codepilot",
-): Promise<VectorHit[]> {
-  const q = await embedQuery(query);
+async function loadVectors(repo: string): Promise<VectorRow[]> {
+  const cached = vectorCache.get(repo);
+  if (cached) return cached;
 
   const rows = await prisma.chunk.findMany({
     where: { repo, embedding: { not: null } },
@@ -76,13 +79,45 @@ export async function vectorSearch(
     },
   });
 
+  const parsed = rows.map((r) => ({
+    id: r.id,
+    path: r.path,
+    startLine: r.startLine,
+    endLine: r.endLine,
+    content: r.content,
+    vector: JSON.parse(r.embedding!) as number[],
+  }));
+
+  vectorCache.set(repo, parsed);
+  return parsed;
+}
+
+async function embedQuery(query: string): Promise<number[]> {
+  const cached = queryCache.get(query);
+  if (cached) return cached;
+  const [vec] = await embed([query]);
+  if (queryCache.size > 200) queryCache.clear();
+  queryCache.set(query, vec);
+  return vec;
+}
+
+export async function vectorSearch(
+  query: string,
+  topK = 5,
+  repo = "codepilot",
+  queryVec?: number[],
+): Promise<VectorHit[]> {
+  const q = queryVec ?? (await embedQuery(query));
+
+  const rows = await loadVectors(repo);
+
   const scored = rows.map((r) => ({
     id: r.id,
     path: r.path,
     startLine: r.startLine,
     endLine: r.endLine,
     content: r.content,
-    score: cosine(q, JSON.parse(r.embedding!) as number[]),
+    score: cosine(q, r.vector),
   }));
 
   scored.sort((a, b) => b.score - a.score);

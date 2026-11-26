@@ -18,6 +18,7 @@ export async function embed(texts: string[]): Promise<number[][]> {
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({ model, input: texts }),
+    signal: AbortSignal.timeout(30000),
   });
 
   if (!res.ok) {

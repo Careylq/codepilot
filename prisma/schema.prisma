@@ -18,6 +18,8 @@ model Chunk {
   endLine   Int
   content   String
   embedding String?
+  symbol    String?
+  kind      String?
 
   @@index([repo, path])
 }

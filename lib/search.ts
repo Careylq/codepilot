@@ -1,7 +1,7 @@
 import { prisma } from "./db";
 import type { Chunk } from "./indexer";
 import { BM25, tokenize } from "./bm25";
-import { vectorSearch } from "./vector";
+import { clearVectorCache, vectorSearch } from "./vector";
 
 type DbChunk = Chunk & { id: number };
 type RepoIndex = { chunks: DbChunk[]; bm25: BM25 };
@@ -18,6 +18,8 @@ async function loadRepo(repo: string): Promise<RepoIndex> {
       startLine: true,
       endLine: true,
       content: true,
+      symbol: true,
+      kind: true,
     },
   });
 
@@ -39,6 +41,7 @@ export async function ensureIndex(repo = "codepilot") {
 
 export function clearIndexCache() {
   indexes.clear();
+  clearVectorCache();
 }
 
 export type SearchHit = {
@@ -48,6 +51,8 @@ export type SearchHit = {
   score: number;
   bm25?: number;
   vec?: number;
+  symbol?: string | null;
+  kind?: string | null;
   snippet: string;
 };
 
@@ -73,6 +78,17 @@ function pathBonus(chunk: Chunk, rawQuery: string): number {
   return base.includes(q) ? 2 : 0;
 }
 
+function symbolBonus(chunk: DbChunk, rawQuery: string): number {
+  const q = rawQuery.trim().toLowerCase();
+  if (!q || /\s/.test(q)) return 0;
+
+  const sym = (chunk.symbol ?? "").toLowerCase();
+  if (!sym) return 0;
+  if (sym === q) return 6;
+  if (sym.includes(q)) return 3;
+  return 0;
+}
+
 function isIdentifierQuery(q: string): boolean {
   const t = q.trim();
   return /^[A-Za-z_$][\w$.-]*$/.test(t) && !/\s/.test(t);
@@ -92,7 +108,8 @@ export async function bm25Search(
     score:
       h.score +
       definitionBonus(idx.chunks[h.id], query) +
-      pathBonus(idx.chunks[h.id], query),
+      pathBonus(idx.chunks[h.id], query) +
+      symbolBonus(idx.chunks[h.id], query),
   }));
 
   scored.sort((a, b) => b.score - a.score);
@@ -104,6 +121,8 @@ export async function bm25Search(
       startLine: c.startLine,
       endLine: c.endLine,
       score: Number(h.score.toFixed(3)),
+      symbol: c.symbol,
+      kind: c.kind,
       snippet: c.content.slice(0, 300),
     };
   });
@@ -114,6 +133,7 @@ export async function hybridSearch(
   query: string,
   topK = 5,
   repo = "codepilot",
+  queryVec?: number[],
 ) {
   await ensureIndex(repo);
   const idx = indexes.get(repo)!;
@@ -122,11 +142,14 @@ export async function hybridSearch(
     .score(tokenize(query))
     .map((h) => ({
       dbId: idx.chunks[h.id].id,
-      score: h.score + definitionBonus(idx.chunks[h.id], query),
+      score:
+        h.score +
+        definitionBonus(idx.chunks[h.id], query) +
+        symbolBonus(idx.chunks[h.id], query),
     }))
     .sort((a, b) => b.score - a.score);
 
-  const vecRanked = await vectorSearch(query, 50, repo);
+  const vecRanked = await vectorSearch(query, 50, repo, queryVec);
 
   const K = 60;
   const fused = new Map<number, { rrf: number; bm25?: number; vec?: number }>();
@@ -162,6 +185,8 @@ export async function hybridSearch(
     score: Number(final.toFixed(4)),
     bm25: s.bm25 !== undefined ? Number(s.bm25.toFixed(3)) : undefined,
     vec: s.vec !== undefined ? Number(s.vec.toFixed(3)) : undefined,
+    symbol: c.symbol,
+    kind: c.kind,
     snippet: c.content.slice(0, 300),
   }));
 }

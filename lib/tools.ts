@@ -80,7 +80,7 @@ export const searchCodeTool: Tool = {
       content: hits
         .map(
           (h) =>
-            `${h.path}:${h.startLine}-${h.endLine}  (score ${h.score})\n${h.snippet}`,
+            `${h.path}:${h.startLine}-${h.endLine}${h.symbol ? ` [${h.symbol}]` : ""}  (score ${h.score})\n${h.snippet}`,
         )
         .join("\n\n---\n\n"),
     };
