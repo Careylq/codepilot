@@ -307,3 +307,22 @@ h1 {
   border: 1px solid #e5e7eb;
   padding: 6px 8px;
 }
+
+/* 覆盖 .msg 的 pre-wrap：Markdown 自己管换行，否则段落间会出现大空洞 */
+.msg.assistant {
+  white-space: normal;
+}
+
+.msg.assistant h2 {
+  font-size: 17px;
+  margin: 18px 0 8px;
+}
+
+.msg.assistant h3 {
+  font-size: 15px;
+  margin: 14px 0 6px;
+}
+
+.msg.assistant p {
+  margin: 0 0 8px;
+}
