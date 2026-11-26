@@ -8,8 +8,7 @@
  *   - serverless 环境文件系统只读、且不一定有源码
  *   - 首次请求建索引会超时、且重复烧 embedding 费用
  */
-import { config } from "dotenv";
-config({ path: ".env.local" });
+import "./env";
 
 import { indexRepo } from "../lib/indexer";
 import { embed } from "../lib/embedding";
