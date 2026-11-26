@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type TraceEvent =
   | { type: "step"; step: number }
@@ -20,13 +22,16 @@ type Viewer = {
   lines: { n: number; t: string }[];
 };
 
-const CITE_PATTERN = "`([\\w./-]+\\.(?:ts|tsx|js|jsx|json|css)):(\\d+)(?:-(\\d+))?`";
+const CITE_RE = /^([\w./-]+\.(?:ts|tsx|js|jsx|json|css)):(\d+)(?:-(\d+))?$/;
 
 export default function Home() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(false);
   const [viewer, setViewer] = useState<Viewer | null>(null);
+
+  const tokenBuf = useRef("");
+  const flushTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function patchLast(fn: (m: Msg) => Msg) {
     setMessages((prev) => {
@@ -36,6 +41,22 @@ export default function Home() {
       copy[i] = fn(copy[i]);
       return copy;
     });
+  }
+
+  function flushTokens() {
+    const chunk = tokenBuf.current;
+    tokenBuf.current = "";
+    if (chunk) patchLast((m) => ({ ...m, content: m.content + chunk }));
+  }
+
+  function appendToken(text: string) {
+    tokenBuf.current += text;
+    if (!flushTimer.current) {
+      flushTimer.current = setTimeout(() => {
+        flushTimer.current = null;
+        flushTokens();
+      }, 80);
+    }
   }
 
   async function openCite(p: string, line: number) {
@@ -50,30 +71,43 @@ export default function Home() {
     }
   }
 
-  function renderContent(text: string): ReactNode[] {
-    const re = new RegExp(CITE_PATTERN, "g");
-    const out: ReactNode[] = [];
-    let last = 0;
-    let m: RegExpExecArray | null;
-    let key = 0;
-
-    while ((m = re.exec(text)) !== null) {
-      if (m.index > last) out.push(text.slice(last, m.index));
-      const [full, p, line] = m;
-      out.push(
-        <button
-          key={`c${key++}`}
-          className="cite"
-          onClick={() => openCite(p, Number(line))}
-        >
-          {p}:{line}
-        </button>,
-      );
-      last = m.index + full.length;
-    }
-
-    out.push(text.slice(last));
-    return out;
+  function Markdown({ text }: { text: string }) {
+    return (
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          code(props: any) {
+            const { className, children, ...rest } = props;
+            const content = String(children).replace(/\n$/, "");
+            const m = CITE_RE.exec(content);
+            if (!className && m) {
+              return (
+                <button
+                  className="cite"
+                  onClick={() => openCite(m[1], Number(m[2]))}
+                >
+                  {content}
+                </button>
+              );
+            }
+            return (
+              <code className={className} {...rest}>
+                {children}
+              </code>
+            );
+          },
+          a(props: any) {
+            return (
+              <a href={props.href} target="_blank" rel="noreferrer">
+                {props.children}
+              </a>
+            );
+          },
+        }}
+      >
+        {text}
+      </ReactMarkdown>
+    );
   }
 
   async function send() {
@@ -122,7 +156,7 @@ export default function Home() {
           const data = JSON.parse(dataLine);
 
           if (event === "token") {
-            patchLast((m) => ({ ...m, content: m.content + data.text }));
+            appendToken(data.text);
           } else if (event === "step") {
             patchLast((m) => ({
               ...m,
@@ -163,6 +197,11 @@ export default function Home() {
         content: m.content + `\n\n请求失败：${String(err)}`,
       }));
     } finally {
+      flushTokens();
+      if (flushTimer.current) {
+        clearTimeout(flushTimer.current);
+        flushTimer.current = null;
+      }
       patchLast((m) => ({ ...m, done: true }));
       setLoading(false);
     }
@@ -182,7 +221,11 @@ export default function Home() {
 
         {messages.map((m, i) => (
           <div key={i} className={`msg ${m.role}`}>
-            {m.role === "assistant" ? renderContent(m.content) : m.content}
+            {m.role === "assistant" ? (
+              <Markdown text={m.content} />
+            ) : (
+              m.content
+            )}
             {!m.done && m.role === "assistant" && (
               <span className="cursor">▍</span>
             )}

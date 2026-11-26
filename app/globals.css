@@ -246,3 +246,64 @@ h1 {
 .viewer code {
   white-space: pre;
 }
+
+/* Markdown 渲染 */
+.msg.assistant p {
+  margin: 0 0 10px;
+}
+.msg.assistant p:last-child {
+  margin-bottom: 0;
+}
+.msg.assistant h1,
+.msg.assistant h2,
+.msg.assistant h3 {
+  margin: 16px 0 8px;
+  line-height: 1.35;
+}
+.msg.assistant h1 { font-size: 18px; }
+.msg.assistant h2 { font-size: 16px; }
+.msg.assistant h3 { font-size: 14px; }
+.msg.assistant ul,
+.msg.assistant ol {
+  margin: 8px 0;
+  padding-left: 22px;
+}
+.msg.assistant li {
+  margin: 4px 0;
+}
+.msg.assistant code {
+  background: #f3f4f6;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+.msg.assistant pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  overflow: auto;
+  margin: 10px 0;
+}
+.msg.assistant pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  font-size: 12px;
+}
+.msg.assistant blockquote {
+  border-left: 3px solid #d1d5db;
+  margin: 8px 0;
+  padding-left: 12px;
+  color: #6b7280;
+}
+.msg.assistant table {
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 13px;
+}
+.msg.assistant th,
+.msg.assistant td {
+  border: 1px solid #e5e7eb;
+  padding: 6px 8px;
+}
