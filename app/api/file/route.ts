@@ -1,8 +1,6 @@
 import { NextRequest } from "next/server";
 import { readFile } from "node:fs/promises";
-import path from "node:path";
-
-const ROOT = process.cwd();
+import { isSafeRepoPath } from "@/lib/fs-guard";
 
 export async function GET(req: NextRequest) {
   const p = req.nextUrl.searchParams.get("path") ?? "";
@@ -10,10 +8,11 @@ export async function GET(req: NextRequest) {
 
   if (!p) return Response.json({ error: "缺少 path" }, { status: 400 });
 
-  const abs = path.resolve(ROOT, p);
-  if (abs !== ROOT && !abs.startsWith(ROOT + path.sep)) {
-    return Response.json({ error: "拒绝：路径越界" }, { status: 400 });
+  const guard = isSafeRepoPath(p);
+  if (!guard.ok) {
+    return Response.json({ error: guard.error }, { status: 400 });
   }
+  const abs = guard.abs;
 
   try {
     const text = await readFile(abs, "utf8");

@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { searchCode } from "./search";
+import { isSafeRepoPath } from "./fs-guard";
 
 export type ToolResult =
   | { ok: true; content: string }
@@ -14,7 +14,6 @@ export type Tool = {
   execute: (args: Record<string, unknown>) => Promise<ToolResult>;
 };
 
-const ROOT = process.cwd();
 const MAX_CHARS = 20000;
 
 export const readFileTool: Tool = {
@@ -35,10 +34,9 @@ export const readFileTool: Tool = {
     const rel = String(args.path ?? "").trim();
     if (!rel) return { ok: false, error: "缺少 path 参数" };
 
-    const abs = path.resolve(ROOT, rel);
-    if (abs !== ROOT && !abs.startsWith(ROOT + path.sep)) {
-      return { ok: false, error: "拒绝：路径越界" };
-    }
+    const guard = isSafeRepoPath(rel);
+    if (!guard.ok) return { ok: false, error: guard.error };
+    const abs = guard.abs;
 
     try {
       const content = await readFile(abs, "utf8");
