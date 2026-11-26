@@ -4,6 +4,9 @@
 
 一个从零手写的 Agent 应用，用来回答“这个函数在哪定义”“agent loop 怎么实现的”这类问题。
 
+> **Live Demo**：https://codepilot-nu.vercel.app
+> 访问口令请通过简历 / 邮件获取（防止被脚本刷额度）。
+
 ---
 
 ## 核心能力
