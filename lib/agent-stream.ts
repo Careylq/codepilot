@@ -1,5 +1,7 @@
 import { findTool, toModelTools } from "./tools";
 import type { ChatMessage, ToolCall } from "./agent";
+import { splitMessages, truncateText, withTimeout } from "./resilience";
+import { getMemory, saveMemory, summarize } from "./memory";
 
 export type StreamCallbacks = {
   onStep?: (step: number) => void;
@@ -9,6 +11,9 @@ export type StreamCallbacks = {
 };
 
 const MAX_STEPS = 8;
+const TOOL_TIMEOUT_MS = 8000;
+const TOOL_RESULT_MAX = 6000;
+const MAX_CONTEXT_TOKENS = 12000;
 
 const SYSTEM_PROMPT = `你是一个代码仓库助手 CodePilot。
 你可以调用两个工具：
@@ -25,17 +30,32 @@ const SYSTEM_PROMPT = `你是一个代码仓库助手 CodePilot。
 export async function runAgentStream(
   input: ChatMessage[],
   cb: StreamCallbacks,
+  sessionId?: string,
 ): Promise<{ content: string; trace: string[] }> {
+  const memory = sessionId ? await getMemory(sessionId) : null;
+
   const messages: ChatMessage[] = [
     { role: "system", content: SYSTEM_PROMPT },
+    ...(memory
+      ? [{ role: "system" as const, content: `【历史摘要】${memory}` }]
+      : []),
     ...input,
   ];
   const trace: string[] = [];
+  let summarized = false;
 
   for (let step = 0; step < MAX_STEPS; step++) {
     cb.onStep?.(step + 1);
 
-    const { content, toolCalls } = await callModelStream(messages, cb.onToken);
+    const { fitted, dropped } = splitMessages(messages, MAX_CONTEXT_TOKENS);
+
+    if (!summarized && sessionId && dropped.length >= 4) {
+      summarized = true;
+      const s = await summarize(dropped);
+      if (s) await saveMemory(sessionId, s);
+    }
+
+    const { content, toolCalls } = await callModelStream(fitted, cb.onToken);
 
     const assistantMsg: ChatMessage = {
       role: "assistant",
@@ -68,8 +88,18 @@ export async function runAgentStream(
           continue;
         }
 
-        const result = await tool.execute(args);
-        output = result.ok ? result.content : `错误：${result.error}`;
+        try {
+          const result = await withTimeout(
+            tool.execute(args),
+            TOOL_TIMEOUT_MS,
+            tool.name,
+          );
+          output = result.ok
+            ? truncateText(result.content, TOOL_RESULT_MAX)
+            : `错误：${result.error}`;
+        } catch (err) {
+          output = `错误：${err instanceof Error ? err.message : String(err)}`;
+        }
       }
 
       cb.onToolResult?.(call.function.name, !output.startsWith("错误"), output.slice(0, 200));

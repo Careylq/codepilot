@@ -18,3 +18,10 @@ model Chunk {
   content   String
   embedding String?
 }
+
+model Memory {
+  id        Int      @id @default(autoincrement())
+  sessionId String   @unique
+  summary   String
+  updatedAt DateTime @updatedAt
+}

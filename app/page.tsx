@@ -31,7 +31,18 @@ export default function Home() {
   const [viewer, setViewer] = useState<Viewer | null>(null);
 
   const tokenBuf = useRef("");
+  const sessionIdRef = useRef("");
   const flushTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function getSessionId() {
+    if (typeof window === "undefined") return "";
+    if (sessionIdRef.current) return sessionIdRef.current;
+    const existing = localStorage.getItem("cp_session");
+    const id = existing || crypto.randomUUID();
+    localStorage.setItem("cp_session", id);
+    sessionIdRef.current = id;
+    return id;
+  }
 
   function patchLast(fn: (m: Msg) => Msg) {
     setMessages((prev) => {
@@ -130,6 +141,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [...history, { role: "user", content: text }],
+          sessionId: getSessionId(),
         }),
       });
 

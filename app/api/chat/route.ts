@@ -5,7 +5,10 @@ import type { ChatMessage } from "@/lib/agent";
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
-  const { messages } = (await req.json()) as { messages: ChatMessage[] };
+  const { messages, sessionId } = (await req.json()) as {
+    messages: ChatMessage[];
+    sessionId?: string;
+  };
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
@@ -23,7 +26,7 @@ export async function POST(req: NextRequest) {
           onToolCall: (name, args) => send("tool_call", { name, args }),
           onToolResult: (name, ok, preview) =>
             send("tool_result", { name, ok, preview }),
-        });
+        }, sessionId);
         send("done", result);
       } catch (err) {
         send("error", { message: String(err) });
