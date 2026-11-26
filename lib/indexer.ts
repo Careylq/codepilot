@@ -10,6 +10,7 @@ const IGNORE_DIRS = new Set([
   "out",
   ".venv",
   "coverage",
+  "eval",
 ]);
 
 const IGNORE_PATH_PARTS = ["/api/test-", "/__tests__/", ".test.", ".spec."];

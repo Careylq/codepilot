@@ -1,0 +1,408 @@
+[
+  {
+    "id": "sym-01",
+    "question": "readFileTool 在哪定义",
+    "expectedPaths": [
+      "lib/tools.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-02",
+    "question": "searchCodeTool 是做什么的",
+    "expectedPaths": [
+      "lib/tools.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-03",
+    "question": "findTool",
+    "expectedPaths": [
+      "lib/tools.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-04",
+    "question": "toModelTools 在哪定义",
+    "expectedPaths": [
+      "lib/tools.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-05",
+    "question": "searchCode 是做什么的",
+    "expectedPaths": [
+      "lib/search.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-06",
+    "question": "hybridSearch",
+    "expectedPaths": [
+      "lib/search.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-07",
+    "question": "bm25Search 在哪定义",
+    "expectedPaths": [
+      "lib/search.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-08",
+    "question": "definitionBonus 是做什么的",
+    "expectedPaths": [
+      "lib/search.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-09",
+    "question": "pathBonus",
+    "expectedPaths": [
+      "lib/search.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-10",
+    "question": "isIdentifierQuery 在哪定义",
+    "expectedPaths": [
+      "lib/search.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-11",
+    "question": "vectorSearch 是做什么的",
+    "expectedPaths": [
+      "lib/vector.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-12",
+    "question": "ensureEmbeddings",
+    "expectedPaths": [
+      "lib/vector.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-13",
+    "question": "embed 在哪定义",
+    "expectedPaths": [
+      "lib/embedding.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-14",
+    "question": "cosine 是做什么的",
+    "expectedPaths": [
+      "lib/embedding.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-15",
+    "question": "BM25",
+    "expectedPaths": [
+      "lib/bm25.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-16",
+    "question": "tokenize 在哪定义",
+    "expectedPaths": [
+      "lib/bm25.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-17",
+    "question": "indexRepo 是做什么的",
+    "expectedPaths": [
+      "lib/indexer.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-18",
+    "question": "withTimeout",
+    "expectedPaths": [
+      "lib/resilience.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-19",
+    "question": "estimateTokens 在哪定义",
+    "expectedPaths": [
+      "lib/resilience.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-20",
+    "question": "fitMessages 是做什么的",
+    "expectedPaths": [
+      "lib/resilience.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-21",
+    "question": "splitMessages",
+    "expectedPaths": [
+      "lib/resilience.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-22",
+    "question": "truncateText 在哪定义",
+    "expectedPaths": [
+      "lib/resilience.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-23",
+    "question": "summarize 是做什么的",
+    "expectedPaths": [
+      "lib/memory.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-24",
+    "question": "getMemory",
+    "expectedPaths": [
+      "lib/memory.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-25",
+    "question": "saveMemory 在哪定义",
+    "expectedPaths": [
+      "lib/memory.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-26",
+    "question": "runAgent 是做什么的",
+    "expectedPaths": [
+      "lib/agent.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-27",
+    "question": "runAgentStream",
+    "expectedPaths": [
+      "lib/agent-stream.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-28",
+    "question": "callModelStream 在哪定义",
+    "expectedPaths": [
+      "lib/agent-stream.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-29",
+    "question": "prisma 是做什么的",
+    "expectedPaths": [
+      "lib/db.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "sym-30",
+    "question": "Chunk",
+    "expectedPaths": [
+      "lib/indexer.ts"
+    ],
+    "type": "symbol"
+  },
+  {
+    "id": "nl-01",
+    "question": "agent loop 是怎么实现的",
+    "expectedPaths": [
+      "lib/agent.ts",
+      "lib/agent-stream.ts"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-02",
+    "question": "流式输出是怎么做的",
+    "expectedPaths": [
+      "lib/agent-stream.ts"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-03",
+    "question": "SSE 事件是怎么发给前端的",
+    "expectedPaths": [
+      "app/api/chat/route.ts"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-04",
+    "question": "点击引用怎么弹出代码",
+    "expectedPaths": [
+      "app/page.tsx"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-05",
+    "question": "怎么防止路径越界",
+    "expectedPaths": [
+      "lib/tools.ts",
+      "app/api/file/route.ts"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-06",
+    "question": "工具超时设了多久",
+    "expectedPaths": [
+      "lib/agent-stream.ts"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-07",
+    "question": "上下文预算多少 token",
+    "expectedPaths": [
+      "lib/agent-stream.ts",
+      "lib/resilience.ts"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-08",
+    "question": "会话记忆存在哪里",
+    "expectedPaths": [
+      "lib/memory.ts",
+      "prisma/schema.prisma"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-09",
+    "question": "混合检索的权重怎么定的",
+    "expectedPaths": [
+      "lib/search.ts"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-10",
+    "question": "RRF 是怎么算的",
+    "expectedPaths": [
+      "lib/search.ts"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-11",
+    "question": "中文是怎么分词的",
+    "expectedPaths": [
+      "lib/bm25.ts"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-12",
+    "question": "为什么排除 markdown 文件",
+    "expectedPaths": [
+      "lib/indexer.ts"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-13",
+    "question": "工具结果太长怎么处理",
+    "expectedPaths": [
+      "lib/resilience.ts",
+      "lib/agent-stream.ts"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-14",
+    "question": "代码是怎么切块的",
+    "expectedPaths": [
+      "lib/indexer.ts"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-15",
+    "question": "向量维度是多少",
+    "expectedPaths": [
+      "lib/embedding.ts"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-16",
+    "question": "怎么把索引存进数据库",
+    "expectedPaths": [
+      "lib/search.ts",
+      "lib/db.ts"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-17",
+    "question": "怎么估算 token 数",
+    "expectedPaths": [
+      "lib/resilience.ts"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-18",
+    "question": "怎么判断查询是标识符",
+    "expectedPaths": [
+      "lib/search.ts"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-19",
+    "question": "工具失败后模型怎么知道",
+    "expectedPaths": [
+      "lib/agent-stream.ts"
+    ],
+    "type": "natural"
+  },
+  {
+    "id": "nl-20",
+    "question": "前端怎么解析流式事件",
+    "expectedPaths": [
+      "app/page.tsx"
+    ],
+    "type": "natural"
+  }
+]
