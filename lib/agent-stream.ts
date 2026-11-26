@@ -31,6 +31,7 @@ export async function runAgentStream(
   input: ChatMessage[],
   cb: StreamCallbacks,
   sessionId?: string,
+  signal?: AbortSignal,
 ): Promise<{ content: string; trace: string[] }> {
   const memory = sessionId ? await getMemory(sessionId) : null;
 
@@ -55,7 +56,7 @@ export async function runAgentStream(
       if (s) await saveMemory(sessionId, s);
     }
 
-    const { content, toolCalls } = await callModelStream(fitted, cb.onToken);
+    const { content, toolCalls } = await callModelStream(fitted, cb.onToken, signal);
 
     const assistantMsg: ChatMessage = {
       role: "assistant",
@@ -114,12 +115,16 @@ export async function runAgentStream(
 async function callModelStream(
   messages: ChatMessage[],
   onToken?: (text: string) => void,
+  signal?: AbortSignal,
 ): Promise<{ content: string; toolCalls: ToolCall[] }> {
   const apiKey = process.env.OPENAI_API_KEY;
   const baseURL = process.env.OPENAI_BASE_URL ?? "https://api.deepseek.com/v1";
   const model = process.env.MODEL ?? "deepseek-chat";
 
   if (!apiKey) throw new Error("缺少 OPENAI_API_KEY");
+
+  const timeout = AbortSignal.timeout(60000);
+  const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
 
   const res = await fetch(`${baseURL}/chat/completions`, {
     method: "POST",
@@ -134,6 +139,7 @@ async function callModelStream(
       tool_choice: "auto",
       stream: true,
     }),
+    signal: combined,
   });
 
   if (!res.ok) throw new Error(`模型接口报错：${await res.text()}`);
@@ -166,6 +172,12 @@ async function callModelStream(
         json = JSON.parse(data);
       } catch {
         continue;
+      }
+
+      if (json.error) {
+        throw new Error(
+          `模型流错误：${json.error.message ?? JSON.stringify(json.error)}`,
+        );
       }
 
       const delta = json.choices?.[0]?.delta;

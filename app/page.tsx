@@ -32,6 +32,7 @@ export default function Home() {
 
   const tokenBuf = useRef("");
   const sessionIdRef = useRef("");
+  const abortRef = useRef<AbortController | null>(null);
   const flushTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function getSessionId() {
@@ -68,6 +69,10 @@ export default function Home() {
         flushTokens();
       }, 80);
     }
+  }
+
+  function stop() {
+    abortRef.current?.abort();
   }
 
   async function openCite(p: string, line: number) {
@@ -135,6 +140,9 @@ export default function Home() {
     setInput("");
     setLoading(true);
 
+    const ac = new AbortController();
+    abortRef.current = ac;
+
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -143,6 +151,7 @@ export default function Home() {
           messages: [...history, { role: "user", content: text }],
           sessionId: getSessionId(),
         }),
+        signal: ac.signal,
       });
 
       if (!res.body) throw new Error("没有响应流");
@@ -204,11 +213,14 @@ export default function Home() {
         }
       }
     } catch (err) {
+      const aborted = err instanceof DOMException && err.name === "AbortError";
       patchLast((m) => ({
         ...m,
-        content: m.content + `\n\n请求失败：${String(err)}`,
+        content:
+          m.content + (aborted ? "\n\n（已停止）" : `\n\n请求失败：${String(err)}`),
       }));
     } finally {
+      abortRef.current = null;
       flushTokens();
       if (flushTimer.current) {
         clearTimeout(flushTimer.current);
@@ -288,8 +300,8 @@ export default function Home() {
           }}
           placeholder="问点什么…"
         />
-        <button onClick={send} disabled={loading || !input.trim()}>
-          {loading ? "回答中…" : "发送"}
+        <button onClick={loading ? stop : send} disabled={!loading && !input.trim()}>
+          {loading ? "停止" : "发送"}
         </button>
       </div>
 
