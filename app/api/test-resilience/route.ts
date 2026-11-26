@@ -1,12 +1,16 @@
 import { NextRequest } from "next/server";
 import { fitMessages, withTimeout } from "@/lib/resilience";
-import type { ChatMessage } from "@/lib/agent";
+import type { ChatMessage } from "@/lib/types";
+import { devOnly } from "@/lib/dev-only";
 
 /**
  * /api/test-resilience?mode=timeout  测超时
  * /api/test-resilience?mode=fit      测上下文裁剪
  */
 export async function GET(req: NextRequest) {
+  const blocked = devOnly();
+  if (blocked) return blocked;
+
   const mode = req.nextUrl.searchParams.get("mode") ?? "timeout";
 
   if (mode === "timeout") {

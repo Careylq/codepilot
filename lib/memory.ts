@@ -1,5 +1,5 @@
 import { prisma } from "./db";
-import type { ChatMessage } from "./agent";
+import type { ChatMessage } from "./types";
 
 export async function getMemory(sessionId: string): Promise<string | null> {
   const row = await prisma.memory.findUnique({ where: { sessionId } });

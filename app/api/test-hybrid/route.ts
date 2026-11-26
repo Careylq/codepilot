@@ -1,12 +1,16 @@
 import { NextRequest } from "next/server";
 import { bm25Search, hybridSearch } from "@/lib/search";
 import { vectorSearch } from "@/lib/vector";
+import { devOnly } from "@/lib/dev-only";
 
 /**
  * 三路对比：
  *   /api/test-hybrid?q=agent loop
  */
 export async function GET(req: NextRequest) {
+  const blocked = devOnly();
+  if (blocked) return blocked;
+
   const q = req.nextUrl.searchParams.get("q") ?? "agent loop";
 
   try {

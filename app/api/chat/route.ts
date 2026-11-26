@@ -1,8 +1,9 @@
 import { NextRequest } from "next/server";
 import { runAgentStream } from "@/lib/agent-stream";
-import type { ChatMessage } from "@/lib/agent";
+import type { ChatMessage } from "@/lib/types";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   const { messages, sessionId } = (await req.json()) as {

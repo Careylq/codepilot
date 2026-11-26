@@ -1,5 +1,5 @@
 import { findTool, toModelTools } from "./tools";
-import type { ChatMessage, ToolCall } from "./agent";
+import type { ChatMessage, ToolCall } from "./types";
 import { splitMessages, truncateText, withTimeout } from "./resilience";
 import { getMemory, saveMemory, summarize } from "./memory";
 

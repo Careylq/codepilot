@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { readFileTool } from "@/lib/tools";
+import { devOnly } from "@/lib/dev-only";
 
 /**
  * 手动测试工具用：
@@ -7,6 +8,9 @@ import { readFileTool } from "@/lib/tools";
  *   /api/test-tool?path=../../etc/passwd
  */
 export async function GET(req: NextRequest) {
+  const blocked = devOnly();
+  if (blocked) return blocked;
+
   const p = req.nextUrl.searchParams.get("path") ?? "package.json";
   const result = await readFileTool.execute({ path: p });
 

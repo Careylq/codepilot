@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { embed } from "@/lib/embedding";
 import { ensureEmbeddings, vectorSearch } from "@/lib/vector";
+import { devOnly } from "@/lib/dev-only";
 
 /**
  * /api/test-embed                 测维度
@@ -8,6 +9,9 @@ import { ensureEmbeddings, vectorSearch } from "@/lib/vector";
  * /api/test-embed?q=agent loop    纯向量检索
  */
 export async function GET(req: NextRequest) {
+  const blocked = devOnly();
+  if (blocked) return blocked;
+
   const build = req.nextUrl.searchParams.get("build") === "1";
   const q = req.nextUrl.searchParams.get("q");
 

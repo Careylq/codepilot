@@ -1,4 +1,4 @@
-import type { ChatMessage } from "./agent";
+import type { ChatMessage } from "./types";
 
 /** 给 Promise 加超时；超时抛错 */
 export async function withTimeout<T>(

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { bm25Search, hybridSearch } from "@/lib/search";
 import { vectorSearch } from "@/lib/vector";
 import questions from "@/eval/questions.json";
+import { devOnly } from "@/lib/dev-only";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -29,6 +30,9 @@ function metrics(ranks: number[]) {
  * /api/eval?limit=50  跑评测
  */
 export async function GET(req: NextRequest) {
+  const blocked = devOnly();
+  if (blocked) return blocked;
+
   const limitParam = Number(req.nextUrl.searchParams.get("limit") ?? "0");
   const limit = limitParam > 0 ? limitParam : questions.length;
   const qs = (questions as Q[]).slice(0, limit);
