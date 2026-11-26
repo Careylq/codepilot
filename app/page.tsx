@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -29,11 +29,24 @@ export default function Home() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(false);
   const [viewer, setViewer] = useState<Viewer | null>(null);
+  const [repo, setRepo] = useState("codepilot");
+  const [repos, setRepos] = useState<{ repo: string; chunks: number }[]>([]);
+
+  useEffect(() => {
+    fetch("/api/repos")
+      .then((r) => r.json())
+      .then((data) => setRepos(data))
+      .catch(() => {});
+  }, []);
 
   const tokenBuf = useRef("");
   const sessionIdRef = useRef("");
   const abortRef = useRef<AbortController | null>(null);
   const flushTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function sessionKey() {
+    return `${getSessionId()}-${repo}`;
+  }
 
   function getSessionId() {
     if (typeof window === "undefined") return "";
@@ -78,7 +91,7 @@ export default function Home() {
   async function openCite(p: string, line: number) {
     try {
       const res = await fetch(
-        `/api/file?path=${encodeURIComponent(p)}&line=${line}`,
+        `/api/file?path=${encodeURIComponent(p)}&line=${line}&repo=${repo}`,
       );
       const data = await res.json();
       if (!data.error) setViewer(data as Viewer);
@@ -149,7 +162,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [...history, { role: "user", content: text }],
-          sessionId: getSessionId(),
+          sessionId: sessionKey(),
         }),
         signal: ac.signal,
       });
@@ -234,7 +247,23 @@ export default function Home() {
   return (
     <main>
       <h1>CodePilot</h1>
-      <div className="sub">代码仓库问答 Agent · M4 流式 + 工具可视化 + 引用可点</div>
+      <div className="sub">代码仓库问答 Agent · 多仓库 + 流式 + 引用可点</div>
+
+      <select
+        className="repo-select"
+        value={repo}
+        onChange={(e) => {
+          abortRef.current?.abort();
+          setRepo(e.target.value);
+          setMessages([]);
+        }}
+      >
+        {repos.map((r) => (
+          <option key={r.repo} value={r.repo}>
+            {r.repo}（{r.chunks} 块）
+          </option>
+        ))}
+      </select>
 
       <div className="chat">
         {messages.length === 0 && (

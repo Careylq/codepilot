@@ -11,6 +11,12 @@ const IGNORE_DIRS = new Set([
   ".venv",
   "coverage",
   "eval",
+  "repos",
+  "examples",
+  "benchmarks",
+  "docs",
+  "test",
+  "tests",
 ]);
 
 const IGNORE_PATH_PARTS = ["/api/test-", "/__tests__/", ".test.", ".spec."];

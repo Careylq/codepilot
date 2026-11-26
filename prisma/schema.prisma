@@ -11,17 +11,21 @@ datasource db {
 }
 
 model Chunk {
-  id        Int    @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
+  repo      String  @default("codepilot")
   path      String
   startLine Int
   endLine   Int
   content   String
   embedding String?
+
+  @@index([repo, path])
 }
 
 model Memory {
   id        Int      @id @default(autoincrement())
   sessionId String   @unique
+  repo      String   @default("codepilot")
   summary   String
   updatedAt DateTime @updatedAt
 }

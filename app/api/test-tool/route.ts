@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   if (blocked) return blocked;
 
   const p = req.nextUrl.searchParams.get("path") ?? "package.json";
-  const result = await readFileTool.execute({ path: p });
+  const result = await readFileTool.execute({ path: p }, { repo: "codepilot" });
 
   if (result.ok) {
     return Response.json({

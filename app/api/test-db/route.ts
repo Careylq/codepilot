@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { ensureIndex, rebuildIndex } from "@/lib/search";
+import { clearIndexCache, ensureIndex } from "@/lib/search";
 import { devOnly } from "@/lib/dev-only";
 
 /**
@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
   if (blocked) return blocked;
 
   const rebuild = req.nextUrl.searchParams.get("rebuild") === "1";
-  const result = rebuild ? await rebuildIndex() : await ensureIndex();
+  if (rebuild) clearIndexCache();
+  const result = await ensureIndex();
   return Response.json(result);
 }

@@ -10,12 +10,13 @@ import { isSafeRepoPath } from "./fs-guard";
  */
 export async function getFileContent(
   rel: string,
+  repo = "codepilot",
 ): Promise<{ ok: true; content: string } | { ok: false; error: string }> {
   const guard = isSafeRepoPath(rel);
   if (!guard.ok) return { ok: false, error: guard.error };
 
   const chunks = await prisma.chunk.findMany({
-    where: { path: rel },
+    where: { repo, path: rel },
     orderBy: { startLine: "asc" },
     select: { startLine: true, endLine: true, content: true },
   });

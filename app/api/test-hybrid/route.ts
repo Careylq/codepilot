@@ -12,12 +12,13 @@ export async function GET(req: NextRequest) {
   if (blocked) return blocked;
 
   const q = req.nextUrl.searchParams.get("q") ?? "agent loop";
+  const repo = req.nextUrl.searchParams.get("repo") ?? "codepilot";
 
   try {
     const [b, v, h] = await Promise.all([
-      bm25Search(q, 3),
-      vectorSearch(q, 3),
-      hybridSearch(q, 3),
+      bm25Search(q, 3, repo),
+      vectorSearch(q, 3, repo),
+      hybridSearch(q, 3, repo),
     ]);
 
     const fmt = (arr: { path: string; startLine: number; score: number }[]) =>

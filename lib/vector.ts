@@ -4,9 +4,9 @@ import { cosine, embed } from "./embedding";
 const BATCH_SIZE = 16;
 
 /** 给还没有向量的 chunk 生成向量，写入数据库 */
-export async function ensureEmbeddings() {
+export async function ensureEmbeddings(repo?: string) {
   const missing = await prisma.chunk.findMany({
-    where: { embedding: null },
+    where: { embedding: null, ...(repo ? { repo } : {}) },
     select: { id: true, path: true, content: true },
     orderBy: { id: "asc" },
   });
@@ -57,11 +57,15 @@ async function embedQuery(query: string): Promise<number[]> {
   return vec;
 }
 
-export async function vectorSearch(query: string, topK = 5): Promise<VectorHit[]> {
+export async function vectorSearch(
+  query: string,
+  topK = 5,
+  repo = "codepilot",
+): Promise<VectorHit[]> {
   const q = await embedQuery(query);
 
   const rows = await prisma.chunk.findMany({
-    where: { embedding: { not: null } },
+    where: { repo, embedding: { not: null } },
     select: {
       id: true,
       path: true,

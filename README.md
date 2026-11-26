@@ -12,6 +12,7 @@
 ## 核心能力
 
 - **手写 agent loop**：不用 LangChain / LangGraph，自己实现「模型 → tool_calls → 执行 → 回填 → 再调用」
+- **多仓库**：内置 codepilot / zustand 两个仓库，前端可切换
 - **混合检索**：BM25 关键词 + bge-m3 向量，加权 RRF 融合
 - **流式交互**：SSE 逐 token 输出，工具调用过程可视化
 - **引用可点**：回答里的 `path:line` 可点击，弹窗高亮对应代码
@@ -155,7 +156,7 @@ eval/questions.json     # 50 条评测集
 
 ## 已知限制
 
-- 只索引当前仓库，不支持上传任意仓库
+- 仓库是预置的（codepilot / zustand），不支持用户上传；索引离线跑
 - 向量在 JS 里算余弦，数据量大要换 pgvector
 - 限流是单实例内存版，多实例不精确
 - 评测集 50 条，样本偏小

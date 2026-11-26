@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { runAgentStream } from "@/lib/agent-stream";
 import type { ChatMessage } from "@/lib/types";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { normalizeRepo } from "@/lib/repos";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -20,6 +21,7 @@ export async function POST(req: NextRequest) {
   const body = (await req.json()) as {
     messages?: ChatMessage[];
     sessionId?: string;
+    repo?: string;
   };
 
   const messages = body.messages;
@@ -32,6 +34,8 @@ export async function POST(req: NextRequest) {
     typeof body.sessionId === "string" && SESSION_RE.test(body.sessionId)
       ? body.sessionId
       : undefined;
+
+  const repo = normalizeRepo(body.repo);
 
   const encoder = new TextEncoder();
   let closed = false;
@@ -60,6 +64,7 @@ export async function POST(req: NextRequest) {
               send("tool_result", { name, ok, preview }),
           },
           sessionId,
+          repo,
           req.signal,
         );
         send("done", result);

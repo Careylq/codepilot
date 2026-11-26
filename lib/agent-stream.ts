@@ -31,6 +31,7 @@ export async function runAgentStream(
   input: ChatMessage[],
   cb: StreamCallbacks,
   sessionId?: string,
+  repo = "codepilot",
   signal?: AbortSignal,
 ): Promise<{ content: string; trace: string[] }> {
   const memory = sessionId ? await getMemory(sessionId) : null;
@@ -53,7 +54,7 @@ export async function runAgentStream(
     if (!summarized && sessionId && dropped.length >= 4) {
       summarized = true;
       const s = await summarize(dropped);
-      if (s) await saveMemory(sessionId, s);
+      if (s) await saveMemory(sessionId, repo, s);
     }
 
     const { content, toolCalls } = await callModelStream(fitted, cb.onToken, signal);
@@ -91,7 +92,7 @@ export async function runAgentStream(
 
         try {
           const result = await withTimeout(
-            tool.execute(args),
+            tool.execute(args, { repo }),
             TOOL_TIMEOUT_MS,
             tool.name,
           );

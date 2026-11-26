@@ -5,12 +5,17 @@ export type ToolResult =
   | { ok: true; content: string }
   | { ok: false; error: string };
 
+export type ToolContext = { repo: string };
+
 export type Tool = {
   name: string;
   description: string;
   /** JSON Schema，告诉模型参数长什么样 */
   parameters: Record<string, unknown>;
-  execute: (args: Record<string, unknown>) => Promise<ToolResult>;
+  execute: (
+    args: Record<string, unknown>,
+    ctx: ToolContext,
+  ) => Promise<ToolResult>;
 };
 
 const MAX_CHARS = 20000;
@@ -29,11 +34,11 @@ export const readFileTool: Tool = {
     },
     required: ["path"],
   },
-  async execute(args) {
+  async execute(args, ctx) {
     const rel = String(args.path ?? "").trim();
     if (!rel) return { ok: false, error: "缺少 path 参数" };
 
-    const file = await getFileContent(rel);
+    const file = await getFileContent(rel, ctx.repo);
     if (!file.ok) return { ok: false, error: file.error };
 
     const content = file.content;
@@ -63,11 +68,11 @@ export const searchCodeTool: Tool = {
     },
     required: ["query"],
   },
-  async execute(args) {
+  async execute(args, ctx) {
     const query = String(args.query ?? "").trim();
     if (!query) return { ok: false, error: "缺少 query 参数" };
 
-    const hits = await searchCode(query, 5);
+    const hits = await searchCode(query, 5, ctx.repo);
     if (hits.length === 0) return { ok: true, content: "没有找到匹配结果" };
 
     return {

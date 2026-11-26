@@ -6,11 +6,15 @@ export async function getMemory(sessionId: string): Promise<string | null> {
   return row?.summary ?? null;
 }
 
-export async function saveMemory(sessionId: string, summary: string) {
+export async function saveMemory(
+  sessionId: string,
+  repo: string,
+  summary: string,
+) {
   await prisma.memory.upsert({
     where: { sessionId },
-    create: { sessionId, summary },
-    update: { summary },
+    create: { sessionId, repo, summary },
+    update: { repo, summary },
   });
 }
 

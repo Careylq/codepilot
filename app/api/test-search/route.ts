@@ -12,8 +12,9 @@ export async function GET(req: NextRequest) {
   if (blocked) return blocked;
 
   const q = req.nextUrl.searchParams.get("q") ?? "readFileTool";
-  const { count } = await ensureIndex();
-  const hits = await searchCode(q, 5);
+  const repo = req.nextUrl.searchParams.get("repo") ?? "codepilot";
+  const { count } = await ensureIndex(repo);
+  const hits = await searchCode(q, 5, repo);
 
   return Response.json({ query: q, chunks: count, hits });
 }

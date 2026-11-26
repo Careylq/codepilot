@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { getFileContent } from "@/lib/file-content";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { normalizeRepo } from "@/lib/repos";
 
 export async function GET(req: NextRequest) {
   const rl = rateLimit(`file:${clientIp(req)}`, 120, 60_000);
@@ -12,11 +13,12 @@ export async function GET(req: NextRequest) {
   }
 
   const p = req.nextUrl.searchParams.get("path") ?? "";
+  const repo = normalizeRepo(req.nextUrl.searchParams.get("repo"));
   const line = Math.max(1, Number(req.nextUrl.searchParams.get("line") ?? "1"));
 
   if (!p) return Response.json({ error: "缺少 path" }, { status: 400 });
 
-  const file = await getFileContent(p);
+  const file = await getFileContent(p, repo);
   if (!file.ok) {
     return Response.json({ error: file.error }, { status: 404 });
   }
