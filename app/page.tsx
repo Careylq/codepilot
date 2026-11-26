@@ -30,12 +30,17 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [viewer, setViewer] = useState<Viewer | null>(null);
   const [repo, setRepo] = useState("codepilot");
-  const [repos, setRepos] = useState<{ repo: string; chunks: number }[]>([]);
+  const [repos, setRepos] = useState<{ repo: string; chunks: number }[]>([
+    { repo: "codepilot", chunks: 0 },
+    { repo: "zustand", chunks: 0 },
+  ]);
 
   useEffect(() => {
     fetch("/api/repos")
       .then((r) => r.json())
-      .then((data) => setRepos(data))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) setRepos(data);
+      })
       .catch(() => {});
   }, []);
 
