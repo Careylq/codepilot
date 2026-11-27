@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { bm25Search, hybridSearch } from "@/lib/search";
+import { bm25Search, hybridSearch, searchCode } from "@/lib/search";
 import { vectorSearch } from "@/lib/vector";
 import { embed } from "@/lib/embedding";
 import questions from "@/eval/questions.json";
@@ -51,10 +51,11 @@ export async function GET(req: NextRequest) {
     const q = qs[idx];
     const qv = vectors[idx];
 
-    const [b, v, h] = await Promise.all([
+    const [b, v, h, r] = await Promise.all([
       bm25Search(q.question, 5),
       vectorSearch(q.question, 5, "codepilot", qv),
       hybridSearch(q.question, 5, "codepilot", qv),
+      searchCode(q.question, 5, "codepilot", qv),
     ]);
 
     rows.push({
@@ -65,9 +66,11 @@ export async function GET(req: NextRequest) {
       bm25Rank: rankOf(b, q.expectedPaths),
       vectorRank: rankOf(v, q.expectedPaths),
       hybridRank: rankOf(h, q.expectedPaths),
+      routerRank: rankOf(r, q.expectedPaths),
       bm25Top: b[0]?.path ?? null,
       vectorTop: v[0]?.path ?? null,
       hybridTop: h[0]?.path ?? null,
+      routerTop: r[0]?.path ?? null,
     });
   }
 
@@ -76,6 +79,7 @@ export async function GET(req: NextRequest) {
     bm25: metrics(rows.map((r) => r.bm25Rank)),
     vector: metrics(rows.map((r) => r.vectorRank)),
     hybrid: metrics(rows.map((r) => r.hybridRank)),
+    router: metrics(rows.map((r) => r.routerRank)),
   };
 
   return Response.json({ summary, rows });

@@ -162,3 +162,53 @@ export function lineChunks(
 
   return out;
 }
+
+/** Markdown 按 ## 标题切块 */
+export function markdownChunks(filePath: string, text: string): AstChunk[] {
+  const lines = text.split("\n");
+  const out: AstChunk[] = [];
+  const MAX = 160;
+
+  const push = (start: number, end: number, title: string) => {
+    if (end <= start) return;
+
+    if (end - start <= MAX) {
+      out.push({
+        path: filePath,
+        startLine: start + 1,
+        endLine: end,
+        content: lines.slice(start, end).join("\n"),
+        symbol: title,
+        kind: "MarkdownSection",
+      });
+      return;
+    }
+
+    for (let s = start; s < end; s += MAX - 20) {
+      const e = Math.min(s + MAX, end);
+      out.push({
+        path: filePath,
+        startLine: s + 1,
+        endLine: e,
+        content: lines.slice(s, e).join("\n"),
+        symbol: title,
+        kind: "MarkdownSection",
+      });
+      if (e === end) break;
+    }
+  };
+
+  let start = 0;
+  let title = "(intro)";
+
+  for (let i = 0; i < lines.length; i++) {
+    if (/^##\s+/.test(lines[i]) && i > start) {
+      push(start, i, title);
+      start = i;
+      title = lines[i].replace(/^##\s+/, "").trim();
+    }
+  }
+  push(start, lines.length, title);
+
+  return out;
+}

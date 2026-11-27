@@ -1,35 +1,227 @@
 [
-  { "id": "sym-01", "repo": "codepilot", "type": "symbol", "query": "readFileTool 在哪定义", "expected": "lib/tools.ts" },
-  { "id": "sym-02", "repo": "codepilot", "type": "symbol", "query": "runAgentStream 在哪实现", "expected": "lib/agent-stream.ts" },
-  { "id": "sym-03", "repo": "codepilot", "type": "symbol", "query": "fitMessages 在哪定义", "expected": "lib/resilience.ts" },
-  { "id": "sym-04", "repo": "codepilot", "type": "symbol", "query": "isSafeRepoPath 在哪定义", "expected": "lib/fs-guard.ts" },
-  { "id": "sym-05", "repo": "codepilot", "type": "symbol", "query": "hybridSearch 在哪实现", "expected": "lib/search.ts" },
-  { "id": "sym-06", "repo": "codepilot", "type": "symbol", "query": "BM25 类在哪定义", "expected": "lib/bm25.ts" },
-  { "id": "sym-07", "repo": "codepilot", "type": "symbol", "query": "getFileContent 在哪定义", "expected": "lib/file-content.ts" },
-  { "id": "sym-08", "repo": "codepilot", "type": "symbol", "query": "callModelStream 在哪实现", "expected": "lib/agent-stream.ts" },
-  { "id": "sym-09", "repo": "codepilot", "type": "symbol", "query": "AUTH_COOKIE 在哪定义", "expected": "lib/auth-token.ts" },
-  { "id": "sym-10", "repo": "codepilot", "type": "symbol", "query": "toModelTools 在哪定义", "expected": "lib/tools.ts" },
-
-  { "id": "nl-01", "repo": "codepilot", "type": "natural", "query": "agent loop 是怎么实现的", "expected": "lib/agent-stream.ts" },
-  { "id": "nl-02", "repo": "codepilot", "type": "natural", "query": "工具调用超时怎么处理", "expected": "lib/resilience.ts" },
-  { "id": "nl-03", "repo": "codepilot", "type": "natural", "query": "上下文超长怎么办", "expected": "lib/resilience.ts" },
-  { "id": "nl-04", "repo": "codepilot", "type": "natural", "query": "怎么防止读到 .env", "expected": "lib/fs-guard.ts" },
-  { "id": "nl-05", "repo": "codepilot", "type": "natural", "query": "混合检索的权重怎么定的", "expected": "lib/search.ts" },
-  { "id": "nl-06", "repo": "codepilot", "type": "natural", "query": "会话记忆存在哪", "expected": "lib/memory.ts" },
-  { "id": "nl-07", "repo": "codepilot", "type": "natural", "query": "流式输出是怎么做的", "expected": "lib/agent-stream.ts" },
-  { "id": "nl-08", "repo": "codepilot", "type": "natural", "query": "引用点击后怎么加载代码", "expected": "app/api/file/route.ts" },
-  { "id": "nl-09", "repo": "codepilot", "type": "natural", "query": "多仓库是怎么隔离的", "expected": "lib/search.ts" },
-  { "id": "nl-10", "repo": "codepilot", "type": "natural", "query": "Review 模式有哪几个角色", "expected": "lib/review.ts" },
-
-  { "id": "zs-01", "repo": "zustand", "type": "symbol", "query": "create 在哪定义", "expected": "src/react.ts" },
-  { "id": "zs-02", "repo": "zustand", "type": "symbol", "query": "createStore 在哪定义", "expected": "src/vanilla.ts" },
-  { "id": "zs-03", "repo": "zustand", "type": "symbol", "query": "combine 中间件怎么实现", "expected": "src/middleware/combine.ts" },
-  { "id": "zs-04", "repo": "zustand", "type": "symbol", "query": "persist 中间件怎么存储", "expected": "src/middleware/persist.ts" },
-  { "id": "zs-05", "repo": "zustand", "type": "symbol", "query": "useStore 怎么订阅状态", "expected": "src/react.ts" },
-
-  { "id": "edge-01", "repo": "codepilot", "type": "edge", "query": "你能读 .env.local 吗", "expected": "lib/fs-guard.ts" },
-  { "id": "edge-02", "repo": "codepilot", "type": "edge", "query": "这个项目用了什么数据库", "expected": "lib/db.ts" },
-  { "id": "edge-03", "repo": "codepilot", "type": "edge", "query": "测试覆盖率是多少", "expected": "package.json" },
-  { "id": "edge-04", "repo": "codepilot", "type": "edge", "query": "限流是怎么做的", "expected": "lib/rate-limit.ts" },
-  { "id": "edge-05", "repo": "codepilot", "type": "edge", "query": "访问口令怎么校验", "expected": "app/api/login/route.ts" }
+  {
+    "id": "sym-01",
+    "repo": "codepilot",
+    "type": "symbol",
+    "query": "readFileTool 在哪定义",
+    "expected": "lib/tools.ts"
+  },
+  {
+    "id": "sym-02",
+    "repo": "codepilot",
+    "type": "symbol",
+    "query": "runAgentStream 在哪实现",
+    "expected": "lib/agent-stream.ts"
+  },
+  {
+    "id": "sym-03",
+    "repo": "codepilot",
+    "type": "symbol",
+    "query": "fitMessages 在哪定义",
+    "expected": "lib/resilience.ts"
+  },
+  {
+    "id": "sym-04",
+    "repo": "codepilot",
+    "type": "symbol",
+    "query": "isSafeRepoPath 在哪定义",
+    "expected": "lib/fs-guard.ts"
+  },
+  {
+    "id": "sym-05",
+    "repo": "codepilot",
+    "type": "symbol",
+    "query": "hybridSearch 在哪实现",
+    "expected": "lib/search.ts"
+  },
+  {
+    "id": "sym-06",
+    "repo": "codepilot",
+    "type": "symbol",
+    "query": "BM25 类在哪定义",
+    "expected": "lib/bm25.ts"
+  },
+  {
+    "id": "sym-07",
+    "repo": "codepilot",
+    "type": "symbol",
+    "query": "getFileContent 在哪定义",
+    "expected": "lib/file-content.ts"
+  },
+  {
+    "id": "sym-08",
+    "repo": "codepilot",
+    "type": "symbol",
+    "query": "callModelStream 在哪实现",
+    "expected": "lib/agent-stream.ts"
+  },
+  {
+    "id": "sym-09",
+    "repo": "codepilot",
+    "type": "symbol",
+    "query": "AUTH_COOKIE 在哪定义",
+    "expected": "lib/auth-token.ts"
+  },
+  {
+    "id": "sym-10",
+    "repo": "codepilot",
+    "type": "symbol",
+    "query": "toModelTools 在哪定义",
+    "expected": "lib/tools.ts"
+  },
+  {
+    "id": "nl-01",
+    "repo": "codepilot",
+    "type": "natural",
+    "query": "agent loop 是怎么实现的",
+    "expected": "lib/agent-stream.ts"
+  },
+  {
+    "id": "nl-02",
+    "repo": "codepilot",
+    "type": "natural",
+    "query": "工具调用超时怎么处理",
+    "expected": "lib/resilience.ts"
+  },
+  {
+    "id": "nl-03",
+    "repo": "codepilot",
+    "type": "natural",
+    "query": "上下文超长怎么办",
+    "expected": "lib/resilience.ts"
+  },
+  {
+    "id": "nl-04",
+    "repo": "codepilot",
+    "type": "natural",
+    "query": "怎么防止读到 .env",
+    "expected": "lib/fs-guard.ts"
+  },
+  {
+    "id": "nl-05",
+    "repo": "codepilot",
+    "type": "natural",
+    "query": "混合检索的权重怎么定的",
+    "expected": "lib/search.ts"
+  },
+  {
+    "id": "nl-06",
+    "repo": "codepilot",
+    "type": "natural",
+    "query": "会话记忆存在哪",
+    "expected": "lib/memory.ts"
+  },
+  {
+    "id": "nl-07",
+    "repo": "codepilot",
+    "type": "natural",
+    "query": "流式输出是怎么做的",
+    "expected": "lib/agent-stream.ts"
+  },
+  {
+    "id": "nl-08",
+    "repo": "codepilot",
+    "type": "natural",
+    "query": "引用点击后怎么加载代码",
+    "expected": [
+      "app/api/file/route.ts",
+      "docs/architecture.md"
+    ]
+  },
+  {
+    "id": "nl-09",
+    "repo": "codepilot",
+    "type": "natural",
+    "query": "多仓库是怎么隔离的",
+    "expected": [
+      "lib/search.ts",
+      "docs/architecture.md"
+    ]
+  },
+  {
+    "id": "nl-10",
+    "repo": "codepilot",
+    "type": "natural",
+    "query": "Review 模式有哪几个角色",
+    "expected": [
+      "lib/review.ts",
+      "docs/architecture.md"
+    ]
+  },
+  {
+    "id": "zs-01",
+    "repo": "zustand",
+    "type": "symbol",
+    "query": "create 在哪定义",
+    "expected": "src/react.ts"
+  },
+  {
+    "id": "zs-02",
+    "repo": "zustand",
+    "type": "symbol",
+    "query": "createStore 在哪定义",
+    "expected": "src/vanilla.ts"
+  },
+  {
+    "id": "zs-03",
+    "repo": "zustand",
+    "type": "symbol",
+    "query": "combine 中间件怎么实现",
+    "expected": "src/middleware/combine.ts"
+  },
+  {
+    "id": "zs-04",
+    "repo": "zustand",
+    "type": "symbol",
+    "query": "persist 中间件怎么存储",
+    "expected": "src/middleware/persist.ts"
+  },
+  {
+    "id": "zs-05",
+    "repo": "zustand",
+    "type": "symbol",
+    "query": "useStore 怎么订阅状态",
+    "expected": "src/react.ts"
+  },
+  {
+    "id": "edge-01",
+    "repo": "codepilot",
+    "type": "edge",
+    "query": "你能读 .env.local 吗",
+    "expected": "lib/fs-guard.ts"
+  },
+  {
+    "id": "edge-02",
+    "repo": "codepilot",
+    "type": "edge",
+    "query": "这个项目用了什么数据库",
+    "expected": [
+      "lib/db.ts",
+      "docs/architecture.md"
+    ]
+  },
+  {
+    "id": "edge-03",
+    "repo": "codepilot",
+    "type": "edge",
+    "query": "测试覆盖率是多少",
+    "expected": [
+      "package.json",
+      "docs/architecture.md"
+    ]
+  },
+  {
+    "id": "edge-04",
+    "repo": "codepilot",
+    "type": "edge",
+    "query": "限流是怎么做的",
+    "expected": "lib/rate-limit.ts"
+  },
+  {
+    "id": "edge-05",
+    "repo": "codepilot",
+    "type": "edge",
+    "query": "访问口令怎么校验",
+    "expected": "app/api/login/route.ts"
+  }
 ]

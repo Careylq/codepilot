@@ -1,6 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import { astChunks, lineChunks, supportsAst } from "./ast-chunker";
+import { astChunks, lineChunks, markdownChunks, supportsAst } from "./ast-chunker";
 
 const IGNORE_DIRS = new Set([
   "node_modules",
@@ -15,12 +15,21 @@ const IGNORE_DIRS = new Set([
   "repos",
   "examples",
   "benchmarks",
-  "docs",
   "test",
   "tests",
 ]);
 
-const IGNORE_PATH_PARTS = ["/api/test-", "/__tests__/", ".test.", ".spec."];
+const IGNORE_PATH_PARTS = [
+  "/api/test-",
+  "/__tests__/",
+  ".test.",
+  ".spec.",
+  "/rollup.config.",
+  "/vite.config.",
+  "/next.config.",
+  "/tailwind.config.",
+  "/postcss.config.",
+];
 
 const EXTENSIONS = new Set([
   ".ts",
@@ -42,7 +51,10 @@ export type Chunk = {
   kind?: string | null;
 };
 
-export async function indexRepo(root = process.cwd()): Promise<Chunk[]> {
+export async function indexRepo(
+  root = process.cwd(),
+  opts: { includeDocs?: boolean } = {},
+): Promise<Chunk[]> {
   const chunks: Chunk[] = [];
 
   async function walk(dir: string) {
@@ -54,19 +66,26 @@ export async function indexRepo(root = process.cwd()): Promise<Chunk[]> {
       const full = path.join(dir, entry.name);
 
       if (entry.isDirectory()) {
+        if (entry.name === "docs" && !opts.includeDocs) continue;
+        if (IGNORE_DIRS.has(entry.name)) continue;
         await walk(full);
         continue;
       }
 
-      if (!EXTENSIONS.has(path.extname(entry.name))) continue;
+      const ext = path.extname(entry.name);
+      const rel = path.relative(root, full);
+      const isDoc = ext === ".md" && rel.startsWith("docs/");
+
+      if (!EXTENSIONS.has(ext) && !(opts.includeDocs && isDoc)) continue;
       if (IGNORE_PATH_PARTS.some((part) => full.includes(part))) continue;
 
-      const rel = path.relative(root, full);
       const text = await readFile(full, "utf8");
 
-      const fileChunks = supportsAst(rel)
-        ? (astChunks(rel, text) ?? lineChunks(rel, text))
-        : lineChunks(rel, text);
+      const fileChunks = isDoc
+        ? markdownChunks(rel, text)
+        : supportsAst(rel)
+          ? (astChunks(rel, text) ?? lineChunks(rel, text))
+          : lineChunks(rel, text);
 
       chunks.push(...fileChunks);
     }

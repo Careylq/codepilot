@@ -18,7 +18,7 @@ import { indexRepo } from "../lib/indexer";
 import { embed } from "../lib/embedding";
 import { prisma } from "../lib/db";
 
-const BATCH_SIZE = 16;
+const BATCH_SIZE = 64;
 
 const ZUSTAND_ROOT = path.join(process.cwd(), "repos/zustand");
 
@@ -36,11 +36,20 @@ const REPOS = [
 ];
 
 async function main() {
-  for (const { name, root } of REPOS) {
+  const only = process.argv[2];
+  const targets = REPOS.filter((r) => !only || r.name === only);
+
+  if (targets.length === 0) {
+    throw new Error(`未知仓库：${only}，可选：${REPOS.map((r) => r.name).join(", ")}`);
+  }
+
+  for (const { name, root } of targets) {
     console.log(`\n=== ${name} ===`);
     console.log(`根目录：${root}`);
 
-    const chunks = await indexRepo(root);
+    const chunks = await indexRepo(root, {
+      includeDocs: name === "codepilot",
+    });
     console.log(`切分得到 ${chunks.length} 块`);
 
     await prisma.chunk.deleteMany({ where: { repo: name } });
@@ -53,22 +62,20 @@ async function main() {
 
       const vectors = await embed(batch.map((c) => `${c.path}\n${c.content}`));
 
-      for (let j = 0; j < batch.length; j++) {
-        await prisma.chunk.create({
-          data: {
-            repo: name,
-            path: batch[j].path,
-            startLine: batch[j].startLine,
-            endLine: batch[j].endLine,
-            content: batch[j].content,
-            symbol: batch[j].symbol,
-            kind: batch[j].kind,
-            embedding: JSON.stringify(vectors[j]),
-          },
-        });
-        done++;
-      }
+      await prisma.chunk.createMany({
+        data: batch.map((c, j) => ({
+          repo: name,
+          path: c.path,
+          startLine: c.startLine,
+          endLine: c.endLine,
+          content: c.content,
+          symbol: c.symbol,
+          kind: c.kind,
+          embedding: JSON.stringify(vectors[j]),
+        })),
+      });
 
+      done += batch.length;
       console.log(`已写入 ${done}/${chunks.length}`);
     }
   }
