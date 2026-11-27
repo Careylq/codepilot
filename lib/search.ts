@@ -84,9 +84,37 @@ function symbolBonus(chunk: DbChunk, rawQuery: string): number {
 
   const sym = (chunk.symbol ?? "").toLowerCase();
   if (!sym) return 0;
-  if (sym === q) return 6;
-  if (sym.includes(q)) return 3;
+  if (sym === q) return 12;
+  if (sym.includes(q)) return 5;
   return 0;
+}
+
+function kindBonus(chunk: DbChunk): number {
+  switch (chunk.kind) {
+    case "FunctionDeclaration":
+    case "ClassDeclaration":
+    case "InterfaceDeclaration":
+    case "TypeAliasDeclaration":
+    case "EnumDeclaration":
+      return 4;
+    default:
+      return 0;
+  }
+}
+
+const INTENT_HINTS: { test: RegExp; hints: string[] }[] = [
+  { test: /数据库|postgres|prisma|db/i, hints: ["prisma", "db", "schema"] },
+  { test: /引用|citation|跳转|加载代码/i, hints: ["citation", "file", "route"] },
+  { test: /多仓库|仓库隔离|repo/i, hints: ["repo", "repository", "chunk"] },
+  { test: /测试|覆盖率|test/i, hints: ["test", "vitest", "package"] },
+  { test: /review|审查|角色/i, hints: ["review", "planner", "reviewer"] },
+];
+
+function expandQuery(query: string): string {
+  const hints = INTENT_HINTS.filter((h) => h.test.test(query)).flatMap(
+    (h) => h.hints,
+  );
+  return hints.length > 0 ? `${query} ${hints.join(" ")}` : query;
 }
 
 function isIdentifierQuery(q: string): boolean {
@@ -103,13 +131,14 @@ export async function bm25Search(
   await ensureIndex(repo);
   const idx = indexes.get(repo)!;
 
-  const scored = idx.bm25.score(tokenize(query)).map((h) => ({
+  const scored = idx.bm25.score(tokenize(expandQuery(query))).map((h) => ({
     id: h.id,
     score:
       h.score +
       definitionBonus(idx.chunks[h.id], query) +
       pathBonus(idx.chunks[h.id], query) +
-      symbolBonus(idx.chunks[h.id], query),
+      symbolBonus(idx.chunks[h.id], query) +
+      kindBonus(idx.chunks[h.id]),
   }));
 
   scored.sort((a, b) => b.score - a.score);
@@ -145,7 +174,8 @@ export async function hybridSearch(
       score:
         h.score +
         definitionBonus(idx.chunks[h.id], query) +
-        symbolBonus(idx.chunks[h.id], query),
+        symbolBonus(idx.chunks[h.id], query) +
+        kindBonus(idx.chunks[h.id]),
     }))
     .sort((a, b) => b.score - a.score);
 
