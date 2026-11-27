@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "index": "tsx scripts/index-repo.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "test": "vitest run"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
@@ -25,6 +26,7 @@
     "dotenv": "^18.0.10",
     "prisma": "6.19.3",
     "tsx": "^4.23.15",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^5.1.2"
   }
 }

@@ -1,0 +1,258 @@
+[
+  {
+    "id": "real-sym-01",
+    "repo": "codepilot",
+    "type": "symbol",
+    "question": "readFileTool 在哪定义",
+    "expectedPaths": [
+      "lib/tools.ts"
+    ]
+  },
+  {
+    "id": "real-sym-02",
+    "repo": "codepilot",
+    "type": "symbol",
+    "question": "runAgentStream 在哪实现",
+    "expectedPaths": [
+      "lib/agent-stream.ts"
+    ]
+  },
+  {
+    "id": "real-sym-03",
+    "repo": "codepilot",
+    "type": "symbol",
+    "question": "fitMessages 在哪定义",
+    "expectedPaths": [
+      "lib/resilience.ts"
+    ]
+  },
+  {
+    "id": "real-sym-04",
+    "repo": "codepilot",
+    "type": "symbol",
+    "question": "isSafeRepoPath 在哪定义",
+    "expectedPaths": [
+      "lib/fs-guard.ts"
+    ]
+  },
+  {
+    "id": "real-sym-05",
+    "repo": "codepilot",
+    "type": "symbol",
+    "question": "hybridSearch 在哪实现",
+    "expectedPaths": [
+      "lib/search.ts"
+    ]
+  },
+  {
+    "id": "real-sym-06",
+    "repo": "codepilot",
+    "type": "symbol",
+    "question": "BM25 类在哪定义",
+    "expectedPaths": [
+      "lib/bm25.ts"
+    ]
+  },
+  {
+    "id": "real-sym-07",
+    "repo": "codepilot",
+    "type": "symbol",
+    "question": "getFileContent 在哪定义",
+    "expectedPaths": [
+      "lib/file-content.ts"
+    ]
+  },
+  {
+    "id": "real-sym-08",
+    "repo": "codepilot",
+    "type": "symbol",
+    "question": "callModelStream 在哪实现",
+    "expectedPaths": [
+      "lib/agent-stream.ts"
+    ]
+  },
+  {
+    "id": "real-sym-09",
+    "repo": "codepilot",
+    "type": "symbol",
+    "question": "AUTH_COOKIE 在哪定义",
+    "expectedPaths": [
+      "lib/auth-token.ts"
+    ]
+  },
+  {
+    "id": "real-sym-10",
+    "repo": "codepilot",
+    "type": "symbol",
+    "question": "toModelTools 在哪定义",
+    "expectedPaths": [
+      "lib/tools.ts"
+    ]
+  },
+  {
+    "id": "real-nl-01",
+    "repo": "codepilot",
+    "type": "natural",
+    "question": "agent loop 是怎么实现的",
+    "expectedPaths": [
+      "lib/agent-stream.ts"
+    ]
+  },
+  {
+    "id": "real-nl-02",
+    "repo": "codepilot",
+    "type": "natural",
+    "question": "工具调用超时怎么处理",
+    "expectedPaths": [
+      "lib/resilience.ts"
+    ]
+  },
+  {
+    "id": "real-nl-03",
+    "repo": "codepilot",
+    "type": "natural",
+    "question": "上下文超长怎么办",
+    "expectedPaths": [
+      "lib/resilience.ts"
+    ]
+  },
+  {
+    "id": "real-nl-04",
+    "repo": "codepilot",
+    "type": "natural",
+    "question": "怎么防止读到 .env",
+    "expectedPaths": [
+      "lib/fs-guard.ts"
+    ]
+  },
+  {
+    "id": "real-nl-05",
+    "repo": "codepilot",
+    "type": "natural",
+    "question": "混合检索的权重怎么定的",
+    "expectedPaths": [
+      "lib/search.ts"
+    ]
+  },
+  {
+    "id": "real-nl-06",
+    "repo": "codepilot",
+    "type": "natural",
+    "question": "会话记忆存在哪",
+    "expectedPaths": [
+      "lib/memory.ts"
+    ]
+  },
+  {
+    "id": "real-nl-07",
+    "repo": "codepilot",
+    "type": "natural",
+    "question": "流式输出是怎么做的",
+    "expectedPaths": [
+      "lib/agent-stream.ts"
+    ]
+  },
+  {
+    "id": "real-nl-08",
+    "repo": "codepilot",
+    "type": "natural",
+    "question": "引用点击后怎么加载代码",
+    "expectedPaths": [
+      "app/api/file/route.ts",
+      "docs/architecture.md"
+    ]
+  },
+  {
+    "id": "real-nl-09",
+    "repo": "codepilot",
+    "type": "natural",
+    "question": "多仓库是怎么隔离的",
+    "expectedPaths": [
+      "lib/search.ts",
+      "docs/architecture.md"
+    ]
+  },
+  {
+    "id": "real-nl-10",
+    "repo": "codepilot",
+    "type": "natural",
+    "question": "Review 模式有哪几个角色",
+    "expectedPaths": [
+      "lib/review.ts",
+      "docs/architecture.md"
+    ]
+  },
+  {
+    "id": "real-zs-01",
+    "repo": "zustand",
+    "type": "symbol",
+    "question": "create 在哪定义",
+    "expectedPaths": [
+      "src/react.ts"
+    ]
+  },
+  {
+    "id": "real-zs-02",
+    "repo": "zustand",
+    "type": "symbol",
+    "question": "createStore 在哪定义",
+    "expectedPaths": [
+      "src/vanilla.ts"
+    ]
+  },
+  {
+    "id": "real-zs-03",
+    "repo": "zustand",
+    "type": "symbol",
+    "question": "combine 中间件怎么实现",
+    "expectedPaths": [
+      "src/middleware/combine.ts"
+    ]
+  },
+  {
+    "id": "real-zs-04",
+    "repo": "zustand",
+    "type": "symbol",
+    "question": "persist 中间件怎么存储",
+    "expectedPaths": [
+      "src/middleware/persist.ts"
+    ]
+  },
+  {
+    "id": "real-zs-05",
+    "repo": "zustand",
+    "type": "symbol",
+    "question": "useStore 怎么订阅状态",
+    "expectedPaths": [
+      "src/react.ts"
+    ]
+  },
+  {
+    "id": "real-edge-02",
+    "repo": "codepilot",
+    "type": "edge",
+    "question": "这个项目用了什么数据库",
+    "expectedPaths": [
+      "lib/db.ts",
+      "docs/architecture.md"
+    ]
+  },
+  {
+    "id": "real-edge-04",
+    "repo": "codepilot",
+    "type": "edge",
+    "question": "限流是怎么做的",
+    "expectedPaths": [
+      "lib/rate-limit.ts"
+    ]
+  },
+  {
+    "id": "real-edge-05",
+    "repo": "codepilot",
+    "type": "edge",
+    "question": "访问口令怎么校验",
+    "expectedPaths": [
+      "app/api/login/route.ts"
+    ]
+  }
+]

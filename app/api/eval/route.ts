@@ -2,7 +2,8 @@ import { NextRequest } from "next/server";
 import { bm25Search, hybridSearch, searchCode } from "@/lib/search";
 import { vectorSearch } from "@/lib/vector";
 import { embed } from "@/lib/embedding";
-import questions from "@/eval/questions.json";
+import curated from "@/eval/questions.json";
+import real from "@/eval/real-questions.json";
 import { devOnly } from "@/lib/dev-only";
 
 export const runtime = "nodejs";
@@ -13,6 +14,7 @@ type Q = {
   question: string;
   expectedPaths: string[];
   type: string;
+  repo?: string;
 };
 
 function rankOf(hits: { path: string }[], expected: string[]): number {
@@ -27,20 +29,38 @@ function metrics(ranks: number[]) {
   return { hit5: Number(hit.toFixed(3)), mrr: Number(mrr.toFixed(3)) };
 }
 
+function summarize(rows: { bm25Rank: number; vectorRank: number; hybridRank: number; routerRank: number }[]) {
+  return {
+    n: rows.length,
+    bm25: metrics(rows.map((r) => r.bm25Rank)),
+    vector: metrics(rows.map((r) => r.vectorRank)),
+    hybrid: metrics(rows.map((r) => r.hybridRank)),
+    router: metrics(rows.map((r) => r.routerRank)),
+  };
+}
+
 /**
- * /api/eval?limit=50  跑评测
+ * /api/eval?set=curated|real|all&limit=50
  */
 export async function GET(req: NextRequest) {
   const blocked = devOnly();
   if (blocked) return blocked;
 
+  const set = req.nextUrl.searchParams.get("set") ?? "curated";
+  const source =
+    set === "real"
+      ? (real as Q[])
+      : set === "all"
+        ? ([...(curated as Q[]), ...(real as Q[])])
+        : (curated as Q[]);
+
   const limitParam = Number(req.nextUrl.searchParams.get("limit") ?? "0");
-  const limit = limitParam > 0 ? limitParam : questions.length;
-  const qs = (questions as Q[]).slice(0, limit);
+  const limit = limitParam > 0 ? limitParam : source.length;
+  const qs = source.slice(0, limit);
 
   const rows = [];
 
-  // 批量算 query 向量：50 题一次调用，避免 100 次串行 embedding
+  // 批量算 query 向量，避免逐题串行 embedding
   const vectors: number[][] = [];
   for (let i = 0; i < qs.length; i += 16) {
     const batch = qs.slice(i, i + 16).map((q) => q.question);
@@ -50,17 +70,19 @@ export async function GET(req: NextRequest) {
   for (let idx = 0; idx < qs.length; idx++) {
     const q = qs[idx];
     const qv = vectors[idx];
+    const repo = q.repo ?? "codepilot";
 
     const [b, v, h, r] = await Promise.all([
-      bm25Search(q.question, 5),
-      vectorSearch(q.question, 5, "codepilot", qv),
-      hybridSearch(q.question, 5, "codepilot", qv),
-      searchCode(q.question, 5, "codepilot", qv),
+      bm25Search(q.question, 5, repo),
+      vectorSearch(q.question, 5, repo, qv),
+      hybridSearch(q.question, 5, repo, qv),
+      searchCode(q.question, 5, repo, qv),
     ]);
 
     rows.push({
       id: q.id,
       type: q.type,
+      repo,
       question: q.question,
       expected: q.expectedPaths,
       bm25Rank: rankOf(b, q.expectedPaths),
@@ -74,13 +96,15 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const summary = {
-    n: rows.length,
-    bm25: metrics(rows.map((r) => r.bm25Rank)),
-    vector: metrics(rows.map((r) => r.vectorRank)),
-    hybrid: metrics(rows.map((r) => r.hybridRank)),
-    router: metrics(rows.map((r) => r.routerRank)),
-  };
+  const summary = summarize(rows);
 
-  return Response.json({ summary, rows });
+  const bySource =
+    set === "all"
+      ? {
+          curated: summarize(rows.filter((r) => !r.id.startsWith("real-"))),
+          real: summarize(rows.filter((r) => r.id.startsWith("real-"))),
+        }
+      : undefined;
+
+  return Response.json({ set, summary, bySource, rows });
 }
