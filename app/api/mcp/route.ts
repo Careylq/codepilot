@@ -7,6 +7,54 @@ import { normalizeRepo } from "@/lib/repos";
 
 export const maxDuration = 60;
 
+/**
+ * 常量时间风格的字符串比较，降低通过响应时间猜测 token 的风险。
+ * 说明：JS 无法保证严格常量时间，这里避免提前返回，做到「近似」常量时间。
+ */
+function safeEqual(a: string, b: string): boolean {
+  const maxLength = Math.max(a.length, b.length);
+  let diff = a.length ^ b.length;
+
+  for (let i = 0; i < maxLength; i += 1) {
+    diff |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  }
+
+  return diff === 0;
+}
+
+/** MCP_TOKEN 未配置时只警告一次，避免每次请求刷日志。 */
+let warnedMissingMcpToken = false;
+
+/**
+ * 校验 Bearer token。
+ * - 未设置 MCP_TOKEN：放行（本地开发），打印一次警告。
+ * - 已设置：要求 `Authorization: Bearer <MCP_TOKEN>`，否则拒绝。
+ */
+function isAuthorized(req: Request): boolean {
+  const token = process.env.MCP_TOKEN;
+
+  if (!token) {
+    if (!warnedMissingMcpToken) {
+      warnedMissingMcpToken = true;
+      console.warn(
+        "[codepilot] MCP_TOKEN 未设置：/api/mcp 未启用 Bearer 校验（仅限本地开发）。",
+      );
+    }
+    return true;
+  }
+
+  const authorization = req.headers.get("authorization")?.trim() ?? "";
+  const match = /^Bearer\s+(.+)$/i.exec(authorization);
+
+  if (!match) return false;
+
+  return safeEqual(match[1].trim(), token);
+}
+
+function unauthorized(): Response {
+  return Response.json({ error: "未授权" }, { status: 401 });
+}
+
 const repoEnum = z.enum(["codepilot", "zustand"]);
 
 function createServer() {
@@ -67,13 +115,16 @@ async function handle(req: Request) {
 }
 
 export async function POST(req: Request) {
+  if (!isAuthorized(req)) return unauthorized();
   return handle(req);
 }
 
 export async function GET(req: Request) {
+  if (!isAuthorized(req)) return unauthorized();
   return handle(req);
 }
 
 export async function DELETE(req: Request) {
+  if (!isAuthorized(req)) return unauthorized();
   return handle(req);
 }
